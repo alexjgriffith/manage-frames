@@ -95,7 +95,7 @@ will also be the width of all other printable characters."
     (when (windmove-left-p)
       (leftmost-aux)))
 
-(defun rightmost()
+(defun rightmost-aux()
   "Recursive portion of rightmost"
     (when (windmove-right-p)
       (rightmost-aux)))

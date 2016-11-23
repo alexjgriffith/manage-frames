@@ -48,13 +48,12 @@ Within your emacs init file (~/.emacs or ~/.emacs.d/init.el) add the following l
 
 ;; By composing your new my-window-size function you can now close all but
 ;; the rightmost window and snap the frame to the right side of your monitor
-(function my-right-window()
+(defun my-right-window()
     (interactive)
     (my-window-size)
     (right-window))
-    
+
 ;; Your new window layout can be toggled with the max-window using the toggle-window-size
 ;; function.
-(global-set-key (kbd "M-2") (lambda() (toggle-window-size my-right-window())))
-
+(global-set-key (kbd "M-2") (lambda() (interactive)(toggle-window-size #'my-right-window)))
 ```
