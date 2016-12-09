@@ -133,6 +133,7 @@ Calling this fucntion %s change the value of manage-frames-win-p." name (if set-
          (off-y (second so))
          (off-x (first so)))
        (set-frame-position (selected-frame)  ,off-x ,off-y)
+       (set-frame-size (selected-frame) 0 0)
        (set-frame-size (selected-frame) ,width ,height))
      (if ,set-win-p
          (setq manage-frames-win-p ',name))))

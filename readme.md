@@ -15,7 +15,7 @@ Within your emacs init file (~/.emacs or ~/.emacs.d/init.el) add the following l
 ```elisp
 ;; Make sure that emacs can see hotlaunch
 (add-to-list `load-path "~/.emacs/lisp")
-(require 'manage-frames.el)
+(require 'manage-frames)
 ```
 
 ## Utilization
