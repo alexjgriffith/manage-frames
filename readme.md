@@ -8,12 +8,21 @@ From your shell download the source from github:
 ## Change to a subdirectory in your local emacs folder
 cd ~/.emacs.d/lisp/
 curl --location -O https://raw.github.com/alexjgriffith/hotlaunch/master/manage-frames.el
+
+## You can also clone the repository to your `emacs` home directory
+cd ~/.emacs.d/ # or wherever your home repo is
+clone https://github.com/alexjgriffith/manage-frames.git
+cp manage-frames/manage-frames.el lisp/
+
+## Be careful if you are using the develop branch, the current package is still imature and going
+## through stages of overhaul, which could result in the changes of function names you depend on
+## or the altering of functionality
 ```
 
 Within your emacs init file (~/.emacs or ~/.emacs.d/init.el) add the following lines
 
 ```elisp
-;; Make sure that emacs can see hotlaunch
+;; Make sure that emacs can see `manage-frames`
 (add-to-list `load-path "~/.emacs/lisp")
 (require 'manage-frames)
 ```
@@ -46,7 +55,7 @@ Within your emacs init file (~/.emacs or ~/.emacs.d/init.el) add the following l
     off-y
     t
     (lambda () 
-        (rightmost)              ; Rather than deleting the right windows
+        (move-window-rightmost)  ; Rather than deleting the right windows
         (delete-other-windows)   ; this function deletes the window on the
         (max-full-off)))         ; left
 
