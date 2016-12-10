@@ -30,11 +30,15 @@
 
 ;;;###autoload
 
-(defvar manage-frames-win-p 'nil
+(defvar manage-frames-frame-p 'nil
   "The current window style, e.g. half-window max-window")
 
 (defvar manage-frames-other-buff 'nil
   "The buffer that is closed when durring toggle-window-size")
+
+(defun manage-frames-set-other-buff (&optional value)
+  (interactive)
+  (setq manage-frames-other-buff value))
 
 (defun default-font-width () 
   "Return the width in pixels of a character in the current
@@ -119,24 +123,27 @@ is provided the leftmost argument is chosen."
     (rightmost))
   (setq manage-frames-other-buff (current-buffer)))
 
-(defmacro make-window-function(name width height off-x off-y set-win-p &optional function)
+
+(defmacro make-window-function(name width height off-x off-y set-frame-p &optional function)
   `(defun ,name (&optional other-buff)
      ,(format "Window function %s, defined using the make-window-function macro.
-Calling this fucntion %s change the value of manage-frames-win-p." name (if set-win-p "will" "will not"))
+Calling this fucntion %s change the value of manage-frames-frame-p." name (if set-frame-p "will" "will not"))
      (interactive)
      (when ,function
        (funcall ,function))
      (let* ((so (get-screen-offset))
             (fs (get-screen-size))
-            (height (second fs))
+            (height (- (second fs) 1))  ; - 1 was to fix an artifact i was having where when half-window
+					; was called twice it would shift the top line of the frame out
+					; of the drawing range of emacs
          (width (first fs))
          (off-y (second so))
          (off-x (first so)))
-       (set-frame-position (selected-frame)  ,off-x ,off-y)
-       (set-frame-size (selected-frame) 0 0)
-       (set-frame-size (selected-frame) ,width ,height))
-     (if ,set-win-p
-         (setq manage-frames-win-p ',name))))
+       (let ((myh ,height)(myw ,width))
+	 (set-frame-position (selected-frame)  ,off-x ,off-y)
+	 (set-frame-size (selected-frame) (min myw width) (min myh height))
+     (if ,set-frame-p
+         (setq manage-frames-frame-p ',name))))))
 
 (defun small-window-fun ()
   "Helper function for frame formats with a single frame"
@@ -151,7 +158,7 @@ is set to the value of other-buffer"
   (when (< (length (mapcar #'window-buffer (window-list))) 2)
     (split-window-right))
   (max-full-off)
-  (when manage-frames-other-buff
+  (when (and manage-frames-other-buff (buffer-live-p manage-frames-other-buff))
     (progn (windmove-right)
            (switch-to-buffer manage-frames-other-buff)
            (windmove-left)
@@ -235,12 +242,12 @@ rather than manualy editiont the frame dimensions"
   (delete-other-windows)
   (max-full-off)
   (toggle-frame-fullscreen)
-  (setq manage-frames-win-p 'full-window))
+  (setq manage-frames-frame-p 'full-window))
 
 (defun toggle-window-size(&optional alt-window)
   "A quick function to switch between max-window and half window"
   (interactive)
-  (if (eq manage-frames-win-p 'max-window)
+  (if (eq manage-frames-frame-p 'max-window)
       (progn
 	(save-other)
         (if alt-window
