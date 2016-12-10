@@ -5,7 +5,7 @@
 ;; Author: Alexander Griffith <griffita@gmail.com>
 ;; keyword: frames screens multiple
 ;; Created: Nov 22 2015
-;; version: 0.0.1
+;; version: 0.0.3
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
