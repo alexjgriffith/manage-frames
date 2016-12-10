@@ -55,13 +55,13 @@ will also be the width of all other printable characters."
       (insert "m")
       (aref (aref (font-get-glyphs (font-at 1) 1 2) 0) 4))))
 
-(defun current-frame()
+(defun get-current-frame()
   "return the currently active frame"
   (caadr (current-frame-configuration)))
 
 (defun get-this-screen-info()
   "get the display monitor attributes for the current frame"
-  (let ((cf (current-frame)))
+  (let ((cf (get-current-frame)))
     (car (remove-if-not (lambda (obj) (eq cf (cadr (assoc 'frames  obj)))) (display-monitor-attributes-list)))))
 
 (defun get-screen-size()
@@ -72,7 +72,7 @@ will also be the width of all other printable characters."
 
 (defun get-screen-offset()
   "Find how far off the current monitor is off from 0,0"
-  (let* ((cf (current-frame))
+  (let* ((cf (get-current-frame))
          (dims (assoc 'workarea (get-this-screen-info))))
          (list (second dims) (third dims))))
 
@@ -105,12 +105,12 @@ will also be the width of all other printable characters."
     (when (windmove-right-p)
       (rightmost-aux)))
 
-(defun rightmost()
+(defun window-move-rightmost()
   "Shift the focus to the screen that is furthest right"
   (interactive)
   (rightmost-aux))
 
-(defun leftmost()
+(defun window-move-leftmost()
   "Shift the focus to the screen that is furthest left"
   (interactive)
   (leftmost-aux))
@@ -120,8 +120,8 @@ will also be the width of all other printable characters."
 If no arguments are provided the rightmost buffer is chosen, if any non nil value
 is provided the leftmost argument is chosen."
   (if left
-      (leftmost)
-    (rightmost))
+      (window-move-leftmost)
+    (window-move-rightmost))
   (setq manage-frames-other-buff (current-buffer)))
 
 
@@ -148,7 +148,7 @@ Calling this fucntion %s change the value of manage-frames-frame-p." name (if se
 
 (defun small-frame-fun ()
   "Helper function for frame formats with a single frame"
-  (leftmost)
+  (window-move-leftmost)
   (delete-other-windows)
   (max-full-off))
 
@@ -165,7 +165,7 @@ is set to the value of other-buffer"
            (windmove-left)
            )))
 
-(make-frame-function narrow-frame
+(make-frame-function frame-make-narrow
                       80
                       height
                       off-x
@@ -173,7 +173,7 @@ is set to the value of other-buffer"
                       t
                       #'small-frame-fun)
 
-(make-frame-function center-frame
+(make-frame-function frame-move-center
                       (frame-width)
                       (frame-height) 
                       (+ off-x  (* (default-font-width)
@@ -181,14 +181,14 @@ is set to the value of other-buffer"
                       off-y
                       nil)
 
-(make-frame-function left-frame
+(make-frame-function frame-move-left
                       (frame-width)
                       (frame-height)
                       off-x
                       off-y
                       nil)
 
-(make-frame-function right-frame
+(make-frame-function frame-move-right
                       (frame-width)
                       (frame-height)
                       (+ off-x  (* (default-font-width)
@@ -196,7 +196,7 @@ is set to the value of other-buffer"
                       off-y
                       nil)
 
-(make-frame-function maxy-frame
+(make-frame-function frame-make-max-y
                       (frame-width)
                       height
                       off-x
@@ -204,7 +204,7 @@ is set to the value of other-buffer"
                       nil)
 
 
-(make-frame-function half-frame
+(make-frame-function frame-make-half
                       (floor (/ width 2))
                       height
                       off-x
@@ -212,7 +212,7 @@ is set to the value of other-buffer"
                       t
                       #'small-frame-fun)
 
-(make-frame-function small-frame
+(make-frame-function frame-make-small
                       80
                       30
                       off-x
@@ -220,7 +220,7 @@ is set to the value of other-buffer"
                       t
                       #'small-frame-fun)
   
-(make-frame-function max-frame
+(make-frame-function frame-make-max
                       width
                       height
                       off-x
@@ -228,14 +228,14 @@ is set to the value of other-buffer"
                       t
                       #'max-frame-fun)
                      
-(defun half-center-frame()
+(defun frame-make-half-centered()
   "Combining both half and center. This is an example of the capacity 
 for the manage-frame functions to be composed."
   (interactive)
-  (half-frame)
-  (center-frame))
+  (frame-make-half)
+  (frame-move-center))
 
-(defun full-frame()
+(defun frame-make-full()
   "Make the current frame full screen. This function departs from the 
 generated function since it relies on the toggle-frame-fullscreen function
 rather than manualy editiont the frame dimensions"
@@ -243,18 +243,18 @@ rather than manualy editiont the frame dimensions"
   (delete-other-windows)
   (max-full-off)
   (toggle-frame-fullscreen)
-  (setq manage-frames-frame-p 'full-frame))
+  (setq manage-frames-frame-p 'frame-make-full))
 
 (defun toggle-frame-size(&optional alt-frame)
   "A quick function to switch between max-frame and half frame"
   (interactive)
-  (if (eq manage-frames-frame-p 'max-frame)
+  (if (eq manage-frames-frame-p 'frame-make-max)
       (progn
 	(save-other)
         (if alt-frame
             (funcall alt-frame)
-          (half-frame)))
-    (max-frame manage-frames-other-buff)))
+          (frame-make-half)))
+    (frame-make-max manage-frames-other-buff)))
 
 ;;(global-set-key (kbd "M-1") #'toggle-frame-size)
 (provide 'manage-frames)
