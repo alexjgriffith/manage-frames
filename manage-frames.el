@@ -29,12 +29,13 @@
 ;;; Code:
 
 ;;;###autoload
+(require 'cl)
 
 (defvar manage-frames-frame-p 'nil
-  "The current window style, e.g. half-window max-window")
+  "The current frame style, e.g. half-frame max-frame")
 
 (defvar manage-frames-other-buff 'nil
-  "The buffer that is closed when durring toggle-window-size")
+  "The buffer that is closed when durring toggle-frame-size")
 
 (defun manage-frames-set-other-buff (&optional value)
   (interactive)
@@ -42,7 +43,7 @@
 
 (defun default-font-width () 
   "Return the width in pixels of a character in the current
-window's default font.  More precisely, this returns the
+frame's default font.  More precisely, this returns the
 width of the letter ‘m’.  If the font is mono-spaced, this
 will also be the width of all other printable characters."
   (let ((window (selected-window))
@@ -124,16 +125,16 @@ is provided the leftmost argument is chosen."
   (setq manage-frames-other-buff (current-buffer)))
 
 
-(defmacro make-window-function(name width height off-x off-y set-frame-p &optional function)
+(defmacro make-frame-function(name width height off-x off-y set-frame-p &optional function)
   `(defun ,name (&optional other-buff)
-     ,(format "Window function %s, defined using the make-window-function macro.
+     ,(format "Frame function %s, defined using the make-frame-function macro.
 Calling this fucntion %s change the value of manage-frames-frame-p." name (if set-frame-p "will" "will not"))
      (interactive)
      (when ,function
        (funcall ,function))
      (let* ((so (get-screen-offset))
             (fs (get-screen-size))
-            (height (- (second fs) 1))  ; - 1 was to fix an artifact i was having where when half-window
+            (height (- (second fs) 1))  ; - 1 was to fix an artifact i was having where when half-frame
 					; was called twice it would shift the top line of the frame out
 					; of the drawing range of emacs
          (width (first fs))
@@ -145,13 +146,13 @@ Calling this fucntion %s change the value of manage-frames-frame-p." name (if se
      (if ,set-frame-p
          (setq manage-frames-frame-p ',name))))))
 
-(defun small-window-fun ()
+(defun small-frame-fun ()
   "Helper function for frame formats with a single frame"
   (leftmost)
-  (delete-other-windows)
+  (delete-other-frames)
   (max-full-off))
 
-(defun max-window-fun()
+(defun max-frame-fun()
   "Helper function for frame formats with two frames. The second frame
 is set to the value of other-buffer"
   (delete-other-windows)
@@ -164,15 +165,15 @@ is set to the value of other-buffer"
            (windmove-left)
            )))
 
-(make-window-function narrow-window
+(make-frame-function narrow-frame
                       80
                       height
                       off-x
                       off-y
                       t
-                      #'small-window-fun)
+                      #'small-frame-fun)
 
-(make-window-function center-window
+(make-frame-function center-frame
                       (frame-width)
                       (frame-height) 
                       (+ off-x  (* (default-font-width)
@@ -180,14 +181,14 @@ is set to the value of other-buffer"
                       off-y
                       nil)
 
-(make-window-function left-window
+(make-frame-function left-frame
                       (frame-width)
                       (frame-height)
                       off-x
                       off-y
                       nil)
 
-(make-window-function right-window
+(make-frame-function right-frame
                       (frame-width)
                       (frame-height)
                       (+ off-x  (* (default-font-width)
@@ -195,7 +196,7 @@ is set to the value of other-buffer"
                       off-y
                       nil)
 
-(make-window-function maxy-window
+(make-frame-function maxy-frame
                       (frame-width)
                       height
                       off-x
@@ -203,38 +204,38 @@ is set to the value of other-buffer"
                       nil)
 
 
-(make-window-function half-window
+(make-frame-function half-frame
                       (floor (/ width 2))
                       height
                       off-x
                       off-y
                       t
-                      #'small-window-fun)
+                      #'small-frame-fun)
 
-(make-window-function small-window
+(make-frame-function small-frame
                       80
                       30
                       off-x
                       off-y
                       t
-                      #'small-window-fun)
+                      #'small-frame-fun)
   
-(make-window-function max-window
+(make-frame-function max-frame
                       width
                       height
                       off-x
                       off-y
                       t
-                      #'max-window-fun)
+                      #'max-frame-fun)
                      
-(defun half-center-window()
+(defun half-center-frame()
   "Combining both half and center. This is an example of the capacity 
 for the manage-frame functions to be composed."
   (interactive)
-  (half-window)
-  (center-window))
+  (half-frame)
+  (center-frame))
 
-(defun full-window()
+(defun full-frame()
   "Make the current frame full screen. This function departs from the 
 generated function since it relies on the toggle-frame-fullscreen function
 rather than manualy editiont the frame dimensions"
@@ -242,20 +243,20 @@ rather than manualy editiont the frame dimensions"
   (delete-other-windows)
   (max-full-off)
   (toggle-frame-fullscreen)
-  (setq manage-frames-frame-p 'full-window))
+  (setq manage-frames-frame-p 'full-frame))
 
-(defun toggle-window-size(&optional alt-window)
-  "A quick function to switch between max-window and half window"
+(defun toggle-frame-size(&optional alt-frame)
+  "A quick function to switch between max-frame and half frame"
   (interactive)
-  (if (eq manage-frames-frame-p 'max-window)
+  (if (eq manage-frames-frame-p 'max-frame)
       (progn
 	(save-other)
-        (if alt-window
-            (funcall alt-window)
-          (half-window)))
-    (max-window manage-frames-other-buff)))
+        (if alt-frame
+            (funcall alt-frame)
+          (half-frame)))
+    (max-frame manage-frames-other-buff)))
 
-;;(global-set-key (kbd "M-1") #'toggle-window-size)
+;;(global-set-key (kbd "M-1") #'toggle-frame-size)
 (provide 'manage-frames)
 ;;; manage-frames.el ends here
 
