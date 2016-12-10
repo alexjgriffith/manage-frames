@@ -149,7 +149,7 @@ Calling this fucntion %s change the value of manage-frames-frame-p." name (if se
 (defun small-frame-fun ()
   "Helper function for frame formats with a single frame"
   (leftmost)
-  (delete-other-frames)
+  (delete-other-windows)
   (max-full-off))
 
 (defun max-frame-fun()
